@@ -1,0 +1,528 @@
+package ehealthmanagement3;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainApp {
+    // Global data structures for storing doctors and appointments
+    private static List<Appointment> appointments = new ArrayList<>();
+    private static List<Doctor> doctors = new ArrayList<>();
+
+    public static void main(String[] args) {
+        // Initialize sample doctors with unique IDs
+        doctors.add(new Doctor("Dr. John Smith", "Cardiologist", "doctor1"));
+        doctors.add(new Doctor("Dr. Sarah Lee", "Dermatologist", "doctor2"));
+        doctors.add(new Doctor("Dr. Mark Brown", "Neurologist", "doctor3"));
+
+        // Launch the login window
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+
+    // -------------------- Login Frame --------------------
+    static class LoginFrame extends JFrame {
+        public LoginFrame() {
+            setTitle("Login");
+            setSize(400, 300);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setLocationRelativeTo(null); // Center the window
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // Username Label and Field
+            JLabel usernameLabel = new JLabel("Username:");
+            JTextField usernameField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            add(usernameLabel, gbc);
+            gbc.gridx = 1;
+            add(usernameField, gbc);
+
+            // Password Label and Field
+            JLabel passwordLabel = new JLabel("Password:");
+            JPasswordField passwordField = new JPasswordField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            add(passwordLabel, gbc);
+            gbc.gridx = 1;
+            add(passwordField, gbc);
+
+            // Role Label and ComboBox
+            JLabel roleLabel = new JLabel("Login as:");
+            String[] roles = {"Doctor", "Patient", "Admin"};
+            JComboBox<String> roleComboBox = new JComboBox<>(roles);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            add(roleLabel, gbc);
+            gbc.gridx = 1;
+            add(roleComboBox, gbc);
+
+            // Login Button
+            JButton loginButton = new JButton("Login");
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            add(loginButton, gbc);
+
+            // Register Button (for Patients and Doctors)
+            JButton registerButton = new JButton("Register");
+            gbc.gridx = 1;
+            add(registerButton, gbc);
+
+            // Action Listener for Login Button
+            loginButton.addActionListener(e -> {
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword()).trim();
+                String role = (String) roleComboBox.getSelectedItem();
+
+                // Validate input fields
+                if (username.isEmpty() || password.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please enter both username and password.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Login Logic
+                if ("Admin".equals(role)) {
+                    if ("admin".equals(username) && "admin123".equals(password)) {
+                        new AdminPanel();
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Invalid Admin credentials!", "Login Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else if ("Doctor".equals(role)) {
+                    // Find doctor by username
+                    Doctor loggedInDoctor = null;
+                    for (Doctor doc : doctors) {
+                        if (doc.getId().equals(username) && "doctor123".equals(password)) {
+                            loggedInDoctor = doc;
+                            break;
+                        }
+                    }
+                    if (loggedInDoctor != null) {
+                        new DoctorPanel(loggedInDoctor.getId());
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Invalid Doctor credentials!", "Login Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else if ("Patient".equals(role)) {
+                    if ("patient".equals(username) && "patient123".equals(password)) {
+                        new PatientPanel(username);
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Invalid Patient credentials!", "Login Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+
+            // Action Listener for Register Button
+            registerButton.addActionListener(e -> new RegisterFrame());
+
+            setVisible(true);
+        }
+    }
+
+    // -------------------- Register Frame --------------------
+    static class RegisterFrame extends JFrame {
+        public RegisterFrame() {
+            setTitle("Register");
+            setSize(400, 450);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLocationRelativeTo(null); // Center the window
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // Name Label and Field
+            JLabel nameLabel = new JLabel("Name:");
+            JTextField nameField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            add(nameLabel, gbc);
+            gbc.gridx = 1;
+            add(nameField, gbc);
+
+            // Phone Label and Field
+            JLabel phoneLabel = new JLabel("Phone Number:");
+            JTextField phoneField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            add(phoneLabel, gbc);
+            gbc.gridx = 1;
+            add(phoneField, gbc);
+
+            // Email Label and Field
+            JLabel emailLabel = new JLabel("Email ID:");
+            JTextField emailField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            add(emailLabel, gbc);
+            gbc.gridx = 1;
+            add(emailField, gbc);
+
+            // Address Label and Field
+            JLabel addressLabel = new JLabel("Address:");
+            JTextField addressField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            add(addressLabel, gbc);
+            gbc.gridx = 1;
+            add(addressField, gbc);
+
+            // Password Label and Field
+            JLabel passwordLabel = new JLabel("Password:");
+            JPasswordField passwordField = new JPasswordField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            add(passwordLabel, gbc);
+            gbc.gridx = 1;
+            add(passwordField, gbc);
+
+            // Role Selection
+            JLabel roleLabel = new JLabel("Register as:");
+            String[] roles = {"Doctor", "Patient"};
+            JComboBox<String> roleComboBox = new JComboBox<>(roles);
+            gbc.gridx = 0;
+            gbc.gridy = 5;
+            add(roleLabel, gbc);
+            gbc.gridx = 1;
+            add(roleComboBox, gbc);
+
+            // Register Button
+            JButton registerButton = new JButton("Register");
+            gbc.gridx = 0;
+            gbc.gridy = 6;
+            gbc.gridwidth = 2;
+            add(registerButton, gbc);
+
+            // Action Listener for Register Button
+            registerButton.addActionListener(e -> {
+                String name = nameField.getText().trim();
+                String phone = phoneField.getText().trim();
+                String email = emailField.getText().trim();
+                String address = addressField.getText().trim();
+                String password = new String(passwordField.getPassword()).trim();
+                String role = (String) roleComboBox.getSelectedItem();
+
+                // Validate input fields
+                if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || address.isEmpty() || password.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Registration Logic
+                if ("Doctor".equals(role)) {
+                    // Assign a unique doctor ID (e.g., doctor4, doctor5, etc.)
+                    String newDoctorId = "doctor" + (doctors.size() + 1);
+                    doctors.add(new Doctor(name, "Specialist", newDoctorId)); // You can enhance to ask for specialty
+                    JOptionPane.showMessageDialog(this, "Doctor registered successfully!\nUsername: " + newDoctorId + "\nPassword: doctor123", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else if ("Patient".equals(role)) {
+                    // For simplicity, assuming only one patient
+                    JOptionPane.showMessageDialog(this, "Patient registered successfully!\nUsername: patient\nPassword: patient123", "Success", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                dispose();
+            });
+
+            setVisible(true);
+        }
+    }
+
+    // -------------------- Patient Panel --------------------
+    static class PatientPanel extends JFrame {
+        private String patientID;
+
+        public PatientPanel(String patientID) {
+            this.patientID = patientID;
+
+            setTitle("Patient Panel");
+            setSize(500, 400);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setLocationRelativeTo(null); // Center the window
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // Doctor Selection ComboBox
+            JLabel doctorLabel = new JLabel("Select Doctor:");
+            JComboBox<String> doctorComboBox = new JComboBox<>();
+            for (Doctor doctor : doctors) {
+                doctorComboBox.addItem(doctor.getName() + " (" + doctor.getSpecialty() + ") [" + doctor.getId() + "]");
+            }
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            add(doctorLabel, gbc);
+            gbc.gridx = 1;
+            add(doctorComboBox, gbc);
+
+            // Appointment Mode ComboBox
+            JLabel modeLabel = new JLabel("Appointment Mode:");
+            String[] modes = {"Online", "Offline"};
+            JComboBox<String> modeComboBox = new JComboBox<>(modes);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            add(modeLabel, gbc);
+            gbc.gridx = 1;
+            add(modeComboBox, gbc);
+
+            // Appointment Date Field
+            JLabel dateLabel = new JLabel("Appointment Date:");
+            JTextField dateField = new JTextField("MM/DD/YYYY", 20);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            add(dateLabel, gbc);
+            gbc.gridx = 1;
+            add(dateField, gbc);
+
+            // Appointment Time Field
+            JLabel timeLabel = new JLabel("Appointment Time:");
+            JTextField timeField = new JTextField("HH:MM AM/PM", 20);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            add(timeLabel, gbc);
+            gbc.gridx = 1;
+            add(timeField, gbc);
+
+            // Book Appointment Button
+            JButton bookButton = new JButton("Book Appointment");
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            gbc.gridwidth = 2;
+            add(bookButton, gbc);
+
+            // Action Listener for Book Appointment Button
+            bookButton.addActionListener(e -> {
+                String selectedDoctor = (String) doctorComboBox.getSelectedItem();
+                String appointmentMode = (String) modeComboBox.getSelectedItem();
+                String date = dateField.getText().trim();
+                String time = timeField.getText().trim();
+
+                // Validate input fields
+                if (selectedDoctor == null || appointmentMode == null || date.isEmpty() || time.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Extract Doctor ID from the selected item
+                String doctorId = extractDoctorId(selectedDoctor);
+
+                // Check if the appointment slot is already booked for the selected doctor
+                boolean isBooked = appointments.stream().anyMatch(a ->
+                        a.getDoctorId().equals(doctorId) &&
+                        a.getDate().equalsIgnoreCase(date) &&
+                        a.getTime().equalsIgnoreCase(time)
+                );
+
+                if (isBooked) {
+                    JOptionPane.showMessageDialog(this, "Appointment already booked for this date and time.", "Booking Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    // Add new appointment
+                    appointments.add(new Appointment(patientID, doctorId, date, time, appointmentMode));
+                    JOptionPane.showMessageDialog(this, "Appointment booked successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                    // Navigate back to Login Page
+                    new LoginFrame().setVisible(true);
+                    dispose();
+                }
+            });
+
+            setVisible(true);
+        }
+
+        // Helper method to extract Doctor ID from the combo box item
+        private String extractDoctorId(String comboBoxItem) {
+            int start = comboBoxItem.indexOf("[") + 1;
+            int end = comboBoxItem.indexOf("]");
+            return comboBoxItem.substring(start, end);
+        }
+    }
+
+    // -------------------- Doctor Panel --------------------
+    static class DoctorPanel extends JFrame {
+        private String doctorId;
+
+        public DoctorPanel(String doctorId) {
+            this.doctorId = doctorId;
+
+            setTitle("Doctor Panel");
+            setSize(500, 400);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setLocationRelativeTo(null); // Center the window
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // View Appointments Button
+            JButton viewAppointmentsButton = new JButton("View Appointments");
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            add(viewAppointmentsButton, gbc);
+
+            // Patient Record Label and Field
+            JLabel recordLabel = new JLabel("Enter Patient Record:");
+            JTextField recordField = new JTextField(20);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.gridwidth = 1;
+            add(recordLabel, gbc);
+            gbc.gridx = 1;
+            add(recordField, gbc);
+
+            // Save Record Button
+            JButton saveRecordButton = new JButton("Save Record");
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.gridwidth = 2;
+            add(saveRecordButton, gbc);
+
+            // Action Listener for View Appointments Button
+            viewAppointmentsButton.addActionListener(e -> {
+                StringBuilder sb = new StringBuilder("Your Appointments:\n");
+                for (Appointment appointment : appointments) {
+                    if (appointment.getDoctorId().equals(doctorId)) {
+                        sb.append(appointment).append("\n");
+                    }
+                }
+                JOptionPane.showMessageDialog(this, sb.length() > 0 ? sb.toString() : "No appointments found.", "Appointments", JOptionPane.INFORMATION_MESSAGE);
+
+                // Navigate back to Login Page
+                new LoginFrame().setVisible(true);
+                dispose();
+            });
+
+            // Action Listener for Save Record Button
+            saveRecordButton.addActionListener(e -> {
+                String record = recordField.getText().trim();
+                if (!record.isEmpty()) {
+                    // Here you can implement saving the record to a database or file
+                    JOptionPane.showMessageDialog(this, "Patient record saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    recordField.setText(""); // Clear the field after saving
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid record.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            setVisible(true);
+        }
+    }
+
+    // -------------------- Admin Panel --------------------
+    static class AdminPanel extends JFrame {
+        public AdminPanel() {
+            setTitle("Admin Panel");
+            setSize(500, 400);
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setLocationRelativeTo(null); // Center the window
+            setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // View All Appointments Button
+            JButton viewAllAppointmentsButton = new JButton("View All Appointments");
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            add(viewAllAppointmentsButton, gbc);
+
+            // Add Doctor Button
+            JButton addDoctorButton = new JButton("Add Doctor");
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.gridwidth = 1;
+            add(addDoctorButton, gbc);
+
+            // Add Patient Button
+            JButton addPatientButton = new JButton("Add Patient");
+            gbc.gridx = 1;
+            gbc.gridy = 1;
+            add(addPatientButton, gbc);
+
+            // Action Listener for View All Appointments Button
+            viewAllAppointmentsButton.addActionListener(e -> {
+                StringBuilder sb = new StringBuilder("All Appointments:\n");
+                for (Appointment appointment : appointments) {
+                    sb.append(appointment).append("\n");
+                }
+                JOptionPane.showMessageDialog(this, sb.length() > 0 ? sb.toString() : "No appointments found.", "All Appointments", JOptionPane.INFORMATION_MESSAGE);
+            });
+
+            // Action Listener for Add Doctor Button
+            addDoctorButton.addActionListener(e -> {
+                new RegisterFrame(); // Reuse RegisterFrame for adding doctors
+            });
+
+            // Action Listener for Add Patient Button
+            addPatientButton.addActionListener(e -> {
+                // For simplicity, inform that patients are pre-registered
+                JOptionPane.showMessageDialog(this, "Patients are pre-registered.\nUse Username: patient and Password: patient123", "Info", JOptionPane.INFORMATION_MESSAGE);
+            });
+
+            setVisible(true);
+        }
+    }
+
+    // -------------------- Appointment Class --------------------
+    static class Appointment {
+        private String patientID;
+        private String doctorId;
+        private String date;
+        private String time;
+        private String mode;
+
+        public Appointment(String patientID, String doctorId, String date, String time, String mode) {
+            this.patientID = patientID;
+            this.doctorId = doctorId;
+            this.date = date;
+            this.time = time;
+            this.mode = mode;
+        }
+
+        public String getDoctorId() {
+            return doctorId;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        @Override
+        public String toString() {
+            return "Patient: " + patientID + " | Date: " + date + " | Time: " + time + " | Mode: " + mode;
+        }
+    }
+
+    // -------------------- Doctor Class --------------------
+    static class Doctor {
+        private String name;
+        private String specialty;
+        private String id;
+
+        public Doctor(String name, String specialty, String id) {
+            this.name = name;
+            this.specialty = specialty;
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSpecialty() {
+            return specialty;
+        }
+
+        public String getId() {
+            return id;
+        }
+    }
+}
